@@ -2,6 +2,7 @@
 #define TRANSICION_H
 
 
+
 typedef char t_Estado[21]; /* Estado */
 typedef char t_Simbolo[11]; /* Simbolo */
 
