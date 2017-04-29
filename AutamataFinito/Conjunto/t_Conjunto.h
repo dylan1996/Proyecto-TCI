@@ -27,17 +27,13 @@ t_Conjunto* crearConjunto(igualesElemento funcion_iguales);
 bool esVacio(t_Conjunto* conjunto);
 int cardinalidad(t_Conjunto*);
 bool agregarElemento(t_Conjunto* conjunto, void* elemento);
-
 bool eliminarElementoFree(t_Conjunto* conjunto, void* elemento, freeElemento funcion_free_elemento);
 bool eliminarElemento(t_Conjunto* conjunto, void* elemento);
-
-
 bool pertenece(t_Conjunto* conjunto, void* elemento);
 
 
 
-void freeConjunto(t_Conjunto*);
-
+void freeConjunto(t_Conjunto**);
 void mostrarConjunto(t_Conjunto* conjunto, mostrarElemento funcion_mostrar_elemento);
 
 #endif

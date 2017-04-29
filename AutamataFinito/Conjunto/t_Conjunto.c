@@ -7,7 +7,7 @@
 t_nodo* crearNodo(void* elemento);
 void freeNodo(t_nodo* nodo);
 t_nodo* buscarNodoAnterior(t_Conjunto* conjunto, void* elemento);
-
+void* eliminarNodo(t_Conjunto* conjunto, void* elemento);
 void incrementaCardinal(t_Conjunto* conjunto);
 void decrementaCardinal(t_Conjunto* conjunto);
 
@@ -52,41 +52,18 @@ bool agregarElemento(t_Conjunto* conjunto, void* elemento)
 
 bool eliminarElementoFree(t_Conjunto* conjunto, void* elemento, freeElemento funcion_free_elemento)
 {
-	
+	void* elemento_eliminar = eliminarNodo(conjunto,elemento);
+	if ( elemento_eliminar == NULL )
+		return false;
+	funcion_free_elemento(elemento_eliminar);
+	return true;
 }
 bool eliminarElemento(t_Conjunto* conjunto, void* elemento)
 {
-	t_nodo* nodo_anterior;
-	t_nodo* nodo_eliminar;
-	
-	if ( esVacio(conjunto) )
-		return false;
-	
-	if ( conjunto->funcion_iguales(conjunto->primer_elem->elemento, elemento) ){
-		nodo_eliminar = conjunto->primer_elem;
-		if ( cardinalidad(conjunto) == 1 )
-			conjunto->primer_elem = conjunto->ultimo_elem = NULL;
-		else
-			conjunto->primer_elem = conjunto->primer_elem->sig;
-	}
-	else{
-		nodo_anterior = conjunto->primer_elem;
-		while ( nodo_anterior->sig != NULL && !conjunto->funcion_iguales(nodo_anterior->sig->elemento, elemento) )
-			nodo_anterior = nodo_anterior->sig;
-		if ( nodo_anterior->sig == NULL )
-			return false;
-		nodo_eliminar = nodo_anterior->sig;
-		nodo_anterior->sig = nodo_eliminar->sig;
-		if ( conjunto->ultimo_elem == nodo_eliminar )
-			conjunto->ultimo_elem = nodo_anterior;
-	}
-	
-	freeNodo(nodo_eliminar);
-	decrementaCardinal(conjunto);
-	return true;
+	if ( eliminarNodo(conjunto, elemento) != NULL  )
+		return true;
+	return false;
 }
-
-
 
 
 bool pertenece(t_Conjunto* conjunto, void* elemento)
@@ -105,10 +82,10 @@ bool pertenece(t_Conjunto* conjunto, void* elemento)
 	return aux != NULL;
 }
 
-
 void mostrarConjunto(t_Conjunto* conjunto, mostrarElemento funcion_mostrar_elemento)
 {
 	int i;
+	
 	t_nodo* aux = conjunto->primer_elem;
 	for ( i = 0; i < conjunto->cardinalidad; i++)
 	{
@@ -117,9 +94,25 @@ void mostrarConjunto(t_Conjunto* conjunto, mostrarElemento funcion_mostrar_eleme
 	}
 }
 
+
+void freeConjunto(t_Conjunto** conjunto)
+{
+	int i;
+	t_nodo* eli;
+	t_nodo* aux;
+	eli = (*conjunto)->primer_elem;
+	
+	for ( i = 0; i < cardinalidad(*conjunto); i++ ){
+		aux = eli->sig;
+		freeNodo(eli);
+		eli = aux;
+	}
+	(*conjunto)->cardinalidad = -1;
+	free(*conjunto);
+	*conjunto = NULL;
+}
+
 /* FUNCIONES PRIVADAS */
-
-
 
 
 t_nodo* crearNodo(void* elemento)
@@ -155,6 +148,42 @@ t_nodo* buscarNodoAnterior(t_Conjunto* conjunto, void* elemento)
 	
 	return NULL;
 }
+
+void* eliminarNodo(t_Conjunto* conjunto, void* elemento)
+{
+	t_nodo* nodo_anterior;
+	t_nodo* nodo_eliminar;
+	void* elemento_eliminar;
+	if ( esVacio(conjunto) )
+		return NULL;
+	
+	if ( conjunto->funcion_iguales(conjunto->primer_elem->elemento, elemento) ){
+		nodo_eliminar = conjunto->primer_elem;
+		elemento_eliminar = conjunto->primer_elem->elemento;
+		if ( cardinalidad(conjunto) == 1 )
+			conjunto->primer_elem = conjunto->ultimo_elem = NULL;
+		else
+			conjunto->primer_elem = conjunto->primer_elem->sig;
+	}
+	else{
+		nodo_anterior = conjunto->primer_elem;
+		while ( nodo_anterior->sig != NULL && !conjunto->funcion_iguales(nodo_anterior->sig->elemento, elemento) )
+			nodo_anterior = nodo_anterior->sig;
+		if ( nodo_anterior->sig == NULL )
+			return NULL;
+		nodo_eliminar = nodo_anterior->sig;
+		elemento_eliminar = nodo_eliminar->elemento;
+		nodo_anterior->sig = nodo_eliminar->sig;
+		if ( conjunto->ultimo_elem == nodo_eliminar )
+			conjunto->ultimo_elem = nodo_anterior;
+	}
+	
+	freeNodo(nodo_eliminar);
+	decrementaCardinal(conjunto);
+	return elemento_eliminar;	
+}
+
+
 
 
 void incrementaCardinal(t_Conjunto* conjunto)
